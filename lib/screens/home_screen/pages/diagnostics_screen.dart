@@ -17,6 +17,9 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
   bool isRedLed = false;
   bool isAmberLed = false;
   bool isGreenLed = false;
+  double outputPowerPercentage = 35.0;
+  double rxSensitivityPercentage = 20.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -463,10 +466,7 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 Container(
                   width: 60,
                   height: 25,
-                  decoration: BoxDecoration(
-                    color: Color(0xffDC0613),
-                    
-                  ),
+                  decoration: BoxDecoration(color: Color(0xffDC0613)),
                 ),
                 SizedBox(width: 10),
                 Text(
@@ -494,10 +494,7 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 Container(
                   width: 60,
                   height: 25,
-                  decoration: BoxDecoration(
-                    color: Color(0xffFFA500),
-                    
-                  ),
+                  decoration: BoxDecoration(color: Color(0xffFFA500)),
                 ),
                 SizedBox(width: 10),
                 Text(
@@ -525,10 +522,7 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 Container(
                   width: 60,
                   height: 25,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF31AC4D),
-                    
-                  ),
+                  decoration: BoxDecoration(color: Color(0xFF31AC4D)),
                 ),
                 SizedBox(width: 10),
                 Text(
@@ -568,17 +562,22 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 23),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFF707070).withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(21),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-            child: Center(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 23),
+        child: Column(
+          children: [
+            Text(
+              'Output Power',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
+            ),
+            SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                'Fire Test',
+                'Power transmitted to the LASER beam',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -586,7 +585,71 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 ),
               ),
             ),
-          ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Background progress bar
+                        Container(
+                          width:
+                              (MediaQuery.of(context).size.width - 100) *
+                              (outputPowerPercentage / 100),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF31AC4D),
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                        ),
+                        // Slider
+                        SliderTheme(
+                          data: SliderThemeData(
+                            trackHeight: 40,
+                            thumbColor: Colors.transparent,
+                            activeTrackColor: Color(0xFF31AC4D),
+                            inactiveTrackColor: Colors.white,
+                            thumbShape: RoundSliderThumbShape(
+                              enabledThumbRadius: 0,
+                              elevation: 0,
+                            ),
+                            overlayShape: RoundSliderOverlayShape(
+                              overlayRadius: 0,
+                            ),
+                          ),
+                          child: Slider(
+                            value: outputPowerPercentage,
+                            min: 0,
+                            max: 100,
+                            divisions: 100,
+                            onChanged: (value) {
+                              setState(() {
+                                outputPowerPercentage = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  '${outputPowerPercentage.round()}%',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -604,17 +667,22 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 23),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFF707070).withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(21),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-            child: Center(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 23),
+        child: Column(
+          children: [
+            Text(
+              'Receiver Sensitivity',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
+            ),
+            SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                'Fire Test',
+                'Amount of light received from the reflector.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -622,7 +690,71 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 ),
               ),
             ),
-          ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Background progress bar
+                        Container(
+                          width:
+                              (MediaQuery.of(context).size.width - 100) *
+                              (rxSensitivityPercentage / 100),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF31AC4D),
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                        ),
+                        // Slider
+                        SliderTheme(
+                          data: SliderThemeData(
+                            trackHeight: 40,
+                            thumbColor: Colors.transparent,
+                            activeTrackColor: Color(0xFF31AC4D),
+                            inactiveTrackColor: Colors.white,
+                            thumbShape: RoundSliderThumbShape(
+                              enabledThumbRadius: 0,
+                              elevation: 0,
+                            ),
+                            overlayShape: RoundSliderOverlayShape(
+                              overlayRadius: 0,
+                            ),
+                          ),
+                          child: Slider(
+                            value: rxSensitivityPercentage,
+                            min: 0,
+                            max: 100,
+                            divisions: 100,
+                            onChanged: (value) {
+                              setState(() {
+                                rxSensitivityPercentage = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  '${rxSensitivityPercentage.round()}%',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -640,17 +772,22 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 23),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFF707070).withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(21),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-            child: Center(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 23),
+        child: Column(
+          children: [
+            Text(
+              'Temperature',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
+            ),
+            SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                'Fire Test',
+                'Heat recorded at Device.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -658,7 +795,25 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 ),
               ),
             ),
-          ),
+            SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Color(0xFF31AC4D),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  '+35°C',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

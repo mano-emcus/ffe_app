@@ -11,6 +11,8 @@ class MaintenanceScreen extends StatefulWidget {
 }
 
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
+  double agcProgress = 0.2; // Default 20%
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,56 +65,64 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Widget _buildAgcSliderWidget() {
-    double progress = 0.2; // 20%
+    const double fixedGreenWidth = 0.4; // Fixed 40% width for green section
     return SizedBox(
       height: 80,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          // Progress Bar
+          // Progress Bar with Slider
           Positioned(
             top: 45,
             left: 0,
             right: 0,
-            child: Container(
-              height: 28,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: (0.40 * 100).toInt(),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF6CB33F),
-                        borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(8),
+            child: GestureDetector(
+              onHorizontalDragUpdate: (details) {
+                final RenderBox box = context.findRenderObject() as RenderBox;
+                final double width = box.size.width;
+                final double dx = details.localPosition.dx.clamp(0, width);
+                setState(() {
+                  agcProgress = (dx / width).clamp(0.0, 1.0);
+                });
+              },
+              child: Container(
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: (fixedGreenWidth * 100).toInt(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF6CB33F),
+                          borderRadius: BorderRadius.horizontal(
+                            left: Radius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 100 - (0.40 * 100).toInt(),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFE89B23),
-                        borderRadius: BorderRadius.horizontal(
-                          right: Radius.circular(8),
+                    Expanded(
+                      flex: 100 - (fixedGreenWidth * 100).toInt(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFFE89B23),
+                          borderRadius: BorderRadius.horizontal(
+                            right: Radius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           // Percentage Indicator
           Positioned(
-            left:
-                (progress * MediaQuery.of(context).size.width) -
-                30, // Adjust for indicator width
+            left: (agcProgress * (MediaQuery.of(context).size.width - 32)) - 15, // Adjusted for padding and indicator width
             top: 0,
             child: Column(
               children: [
@@ -135,7 +145,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                       ),
                     ),
                     Text(
-                      '${(progress * 100).toInt()}%',
+                      '${(agcProgress * 100).toInt()}%',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -144,8 +154,28 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     ),
                   ],
                 ),
-                Container(width: 2, height: 40, color: Color(0xFF96B53A)),
+                Container(
+                  width: 2, 
+                  height: 40, 
+                  color: Color(0xFF96B53A),
+                ),
               ],
+            ),
+          ),
+          // Add invisible touch area for better edge interaction
+          Positioned.fill(
+            child: GestureDetector(
+              onHorizontalDragUpdate: (details) {
+                final RenderBox box = context.findRenderObject() as RenderBox;
+                final double width = box.size.width;
+                final double dx = details.localPosition.dx.clamp(0, width);
+                setState(() {
+                  agcProgress = (dx / width).clamp(0.0, 1.0);
+                });
+              },
+              child: Container(
+                color: Colors.transparent,
+              ),
             ),
           ),
         ],
