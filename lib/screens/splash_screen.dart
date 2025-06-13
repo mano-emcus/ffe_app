@@ -1,3 +1,5 @@
+import 'package:ffe_app/core/api/auth_service.dart';
+import 'package:ffe_app/screens/home_screen/home_screen.dart';
 import 'package:ffe_app/screens/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -9,19 +11,60 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-
 class _SplashScreenState extends State<SplashScreen> {
+  late final AuthService _authService;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SignInScreen()));
-      }
-    });
     super.initState();
+    _authService = AuthService();
+    _initialize();
   }
-  
+
+  Future<void> _initialize() async {
+    try {
+      // Wait for both initialization and minimum splash duration
+      await Future.wait([
+        _authService.initTokenStorage(),
+        Future.delayed(const Duration(seconds: 2)),
+      ]);
+
+      if (!mounted) return;
+
+      final isLoggedIn = await _authService.isLoggedIn();
+      
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => isLoggedIn
+              ? const HomeScreen()
+              : const SignInScreen(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+        _error = 'Failed to initialize: ${e.toString()}';
+      });
+
+      // Wait a bit before navigating to sign in screen
+      await Future.delayed(const Duration(seconds: 1));
+      
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +101,25 @@ class _SplashScreenState extends State<SplashScreen> {
                       SvgPicture.asset('assets/svgs/ffe_logo.svg'),
                       SizedBox(height: 14),
                       SvgPicture.asset('assets/svgs/ble_icon.svg'),
+                      if (_isLoading) ...[
+                        SizedBox(height: 20),
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ],
+                      if (_error != null) ...[
+                        SizedBox(height: 20),
+                        Text(
+                          _error!,
+                          style: TextStyle(color: Colors.red[300], fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ],
                   ),
                 ),

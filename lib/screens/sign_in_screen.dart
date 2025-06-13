@@ -1,3 +1,4 @@
+import 'package:ffe_app/core/api/auth_service.dart';
 import 'package:ffe_app/screens/home_screen/home_screen.dart';
 import 'package:ffe_app/screens/sign_up_screen.dart';
 import 'package:ffe_app/widgets/common_text_field_widget.dart';
@@ -16,16 +17,101 @@ class _SignInScreenState extends State<SignInScreen> {
   late TextEditingController emailController;
   late TextEditingController passwordController;
   bool isRememberMe = false;
+  bool isLoading = false;
+  String? errorMessage;
+  late final AuthService _authService;
+  bool _isInitialized = false;
 
   @override
   void initState() {
-    emailController = TextEditingController();
-    passwordController = TextEditingController();
+    emailController = TextEditingController(text: 'geminiAdmin@gmail.com');
+    passwordController = TextEditingController(text: 'GeminiAdmin@123');
+    _authService = AuthService();
+    _initializeAuthService();
     super.initState();
+  }
+
+  Future<void> _initializeAuthService() async {
+    try {
+      // Wait for token storage initialization
+      await Future.delayed(Duration.zero);
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          errorMessage = 'Failed to initialize: ${e.toString()}';
+          _isInitialized = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleSignIn() async {
+    if (!_isInitialized) {
+      setState(() {
+        errorMessage = 'Please wait while we initialize...';
+      });
+      return;
+    }
+
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      setState(() {
+        errorMessage = 'Please fill in all fields';
+      });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final response = await _authService.signIn(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      if (mounted) {
+        // Navigate to home screen on success
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          print(e);
+          errorMessage = e.toString().replaceAll('ApiException: [0] ', '');
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Scaffold(
+        backgroundColor: Color(0xFF1E1745),
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Color(0xFF1E1745),
@@ -78,6 +164,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
                 SizedBox(height: 15),
+                if (errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: Text(
+                      errorMessage!,
+                      style: TextStyle(
+                        color: Color(0xFFD80B19),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -166,15 +263,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: 16),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
-                  },
+                  onTap: isLoading ? null : _handleSignIn,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Color(0xFFD80B19),
+                      color: isLoading ? Color(0xFFD80B19).withOpacity(0.7) : Color(0xFFD80B19),
                       borderRadius: BorderRadius.circular(27),
                     ),
                     child: Padding(
@@ -184,14 +276,23 @@ class _SignInScreenState extends State<SignInScreen> {
                         top: 14,
                         bottom: 14,
                       ),
-                      child: Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Text(
+                              'Sign In',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ),
