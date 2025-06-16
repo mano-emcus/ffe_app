@@ -38,7 +38,7 @@ class _SignInScreenState extends State<SignInScreen> {
       if (mounted) {
         setState(() {
           _isInitialized = true;
-        });
+        }); 
       }
     } catch (e) {
       if (mounted) {
